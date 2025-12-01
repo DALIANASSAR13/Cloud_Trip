@@ -1,4 +1,4 @@
-name: Run Signup Tests
+name: Run Signup Test
 
 on:
   push:
