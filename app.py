@@ -1,27 +1,28 @@
 from flask import Flask, render_template, request, redirect, url_for
+from Database import ensure_users_table, create_user, verify_user
 
 app = Flask(__name__)
 
-# temporary storage (before connecting to database)
-users = []
+ensure_users_table()
+
 
 @app.route('/')
 def home():
     return redirect(url_for('login'))
 
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form['email'].lower().strip()
+        password = request.form['password_hash'].strip()
 
-        # check if user already exists
-        for u in users:
-            if u['email'] == email:
-                return "Email already registered. Try logging in."
+        success, result = create_user(email, password)
 
-        users.append({'email': email, 'password': password})
-        return redirect(url_for('login'))
+        if success:
+            return redirect(url_for('login'))
+        else:
+            return result
 
     return render_template('signup.html')
 
@@ -29,19 +30,19 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
+        email = request.form['email'].lower().strip()
+        password = request.form['password_hash'].strip()
 
-        for u in users:
-            if u['email'] == email and u['password'] == password:
-                return f"Welcome, {email}! Login successful."
-        return "Invalid email or password."
+        success, result = verify_user(email, password)
+
+        if success:
+            username = result
+            return f"Welcome {username}! Login successful"
+        else:
+            return result
 
     return render_template('login.html')
 
-
-if __name__ == '__main__':
-    app.run(debug=True)
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -58,3 +59,6 @@ def search():
 
     return render_template('search.html')
 
+
+if __name__ == '__main__':
+    app.run(debug=True)
