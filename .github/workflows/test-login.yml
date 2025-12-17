@@ -29,4 +29,4 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run login test
-        run: pytest tests/test_auth.py --maxfail=1 --disable-warnings -q
+        run: python -m pytest tests/test_auth.py
