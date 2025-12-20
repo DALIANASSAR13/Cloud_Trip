@@ -29,22 +29,15 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run unit tests
-        run: |
-          python -m pytest tests/ --maxfail=1 --disable-warnings
+        run: python -m pytest tests/ --maxfail=1 --disable-warnings
 
       - name: Build Docker image
         run: docker build -t cloudtrip:latest .
 
-      - name: Run Docker container
+      - name: Run Docker container locally
         run: |
           docker run --name cloudtrip-test -d -p 8000:8000 cloudtrip:latest
           sleep 10
           curl -f http://localhost:8000/ || exit 1
           docker stop cloudtrip-test
           docker rm cloudtrip-test
-
-      #   Deploy if tests pass
-      # - name: Deploy to 
-      #   if: success()
-      #   uses: 
-      #   with:
