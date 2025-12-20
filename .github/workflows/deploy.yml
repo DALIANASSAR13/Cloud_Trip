@@ -1,0 +1,50 @@
+name: CloudTrip CI/CD
+
+on:
+  push:
+    branches:
+      - ci/general-workflow
+  pull_request:
+    branches:
+      - ci/general-workflow
+  workflow_dispatch:
+
+jobs:
+  test_build_deploy:
+    name: Test, Build & Deploy CloudTrip
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.12
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: |
+          python -m pytest tests/ --maxfail=1 --disable-warnings
+
+      - name: Build Docker image
+        run: docker build -t cloudtrip:latest .
+
+      - name: Run Docker container
+        run: |
+          docker run --name cloudtrip-test -d -p 8000:8000 cloudtrip:latest
+          sleep 10
+          curl -f http://localhost:8000/ || exit 1
+          docker stop cloudtrip-test
+          docker rm cloudtrip-test
+
+      #   Deploy if tests pass
+      # - name: Deploy to 
+      #   if: success()
+      #   uses: 
+      #   with:
