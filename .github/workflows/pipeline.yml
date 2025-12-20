@@ -1,22 +1,24 @@
-name: CI Pipeline
+name: CloudTrip CI - GitHub
 
 on:
   push:
     branches:
       - main
+      - ci/general-workflow
   pull_request:
     branches:
       - main
 
 jobs:
   test:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -24,9 +26,9 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
           pip install pytest
+          pip install psycopg2-binary
 
-      - name: Run unit tests
-        run: |
-          pytest -v
+      - name: Run Unit Tests
+        run: pytest -v tests/
